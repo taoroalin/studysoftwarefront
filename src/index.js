@@ -3,10 +3,10 @@ import ReactDOM from 'react-dom';
 import TagsInput from 'react-tagsinput'
 import scrollArea from 'react-scrollbar';
 import './index.css';
-import App from './App';
 import * as serviceWorker from './serviceWorker';
 import { read } from 'fs';
 import { tsImportEqualsDeclaration } from '@babel/types';
+import Api from './api';
 
 class Header extends React.Component {
     render() {
@@ -70,6 +70,7 @@ class QuickInput extends React.Component {
             notes: '',
             relations: []
         };
+        this.api = new Api();
         this.dced = '';
         this.handleChange = this.handleChange.bind(this);
         this.clearForm = this.clearForm.bind(this);
@@ -122,6 +123,7 @@ class QuickInput extends React.Component {
                             document.getElementsByName('title')[0].focus();
                             console.log(this.state.title + this.state.definition + this.state.notes);
                             console.log(this.state.relations);
+                            this.api.createNoteRelation(this.state);
                         }
                     }
                 }
