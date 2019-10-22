@@ -5,6 +5,7 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /*background:#202020;*/
 }
 
 input{
@@ -15,6 +16,23 @@ input{
   padding: 6px;
   font-size: 20px;
   border-radius: 6px;
+}
+
+h1{
+  font-weight: lighter;
+  font-size:38px;
+}
+
+h3{
+  margin: 16px 7% 0px 0px;
+  font-weight: lighter;
+  font-size:24px;
+}
+h3:hover{
+cursor: pointer;
+}
+h1:hover{
+  cursor: pointer;
 }
 
 body::scrollbar{

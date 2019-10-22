@@ -9,24 +9,73 @@ import { tsImportEqualsDeclaration } from '@babel/types';
 import Api from './api';
 
 class Header extends React.Component {
+
+    addMode() {
+        ReactDOM.render(
+            <div>
+                <Header />
+                <QuickInput />
+                <Footer />
+            </div>,
+            document.getElementById('root')
+        )
+    }
+
+    testMode() {
+        ReactDOM.render(
+            <div>
+                <Header />
+                <Test />
+                <Footer />
+            </div>,
+            document.getElementById('root')
+        )
+    }
+
+    editMode() {
+        ReactDOM.render(
+            <div>
+                <Header />
+                <Overview />
+                <Footer />
+            </div>,
+            document.getElementById('root')
+        )
+    }
+
+    aboutMode() {
+        ReactDOM.render(
+            <div>
+                <Header />
+                <About />
+                <Footer />
+            </div>,
+            document.getElementById('root')
+        )
+    }
+
     render() {
         return (
-            <div className="header" >
-                <div
-                    style={{
-                        position: 'absolute',
-                        textAlign: 'center',
-                        left: '50%',
-                        transform: 'translate(-50%, -10%) scaleX(1.1)',
-                        //background: '#efefef',
-                        color: '#41b8cc',
-                    }}>
-                    <h1 style={{
-                        fontWeight: 'lighter',
-                        fontSize: '38px',
-
-                    }}>Study Software</h1>
+            <div className="header"
+            >
+                <div style={{
+                    position: 'absolute',
+                    left: 0,
+                    top: 0,
+                    color: '#41b8cc',
+                    display: 'flex',
+                    flexDirection: 'horizontal'
+                }}>
+                    <h1 onClick={this.aboutMode} style={{ margin: '4px 0 0px 20px' }}>Study Software</h1>
                 </div>
+                <div style={{ display: 'absolute', right: 0, top: 0 }}>
+                    <div style={{ display: 'flex', flexDirection: 'row-reverse', color: '#8bcbd6' }}>
+                        <h3 onClick={this.testMode}>Test</h3>
+                        <h3 onClick={this.editMode}>Edit</h3>
+                        <h3 onClick={this.addMode}>Add</h3>
+                    </div>
+                </div>
+
             </div>
         )
     }
@@ -37,8 +86,8 @@ class Footer extends React.Component {
         return (<p style={{
             position: 'absolute',
             bottom: 0,
-            left:0,
-            right:0,
+            left: 0,
+            right: 0,
             textAlign: 'center',
             color: 'grey'
         }}>Prototype v1</p>)
@@ -48,7 +97,11 @@ class Footer extends React.Component {
 class Overview extends React.Component {
     render() {
         return (
-            <div className="overview"></div>
+            <div className="overview">
+                <div className="overviewHeader">
+
+                </div>
+            </div>
         )
     }
 }
@@ -68,7 +121,11 @@ class QuickInput extends React.Component {
             title: '',
             definition: '',
             notes: '',
-            relations: []
+            relations: [],
+            created: 0,
+            reviewHistory: [],
+            user: 'Tao',
+
         };
         this.api = new Api();
         this.dced = '';
@@ -123,21 +180,41 @@ class QuickInput extends React.Component {
                             document.getElementsByName('title')[0].focus();
                             console.log(this.state.title + this.state.definition + this.state.notes);
                             console.log(this.state.relations);
+                            this.state.created = 0;
                             this.api.createNoteRelation(this.state);
                         }
                     }
                 }
                 }>
                 <input name="title"
-                    value={this.state.title} onChange={this.handleChange} placeholder="Unique Title"></input>
+                    value={this.state.title} onChange={this.handleChange} placeholder="Unique Title" />
                 <input name="definition"
-                    value={this.state.definition} onChange={this.handleChange} placeholder="Definition"></input>
-                <TagsInput addKeys='[9]' props={{ placeholder: 'relations' }} value={this.state.relations} onChange={this.handleRelationChange} renderTag={this.renderRelation} />
+                    value={this.state.definition} onChange={this.handleChange} placeholder="Definition" />
+                <TagsInput
+                    addKeys='[9]'
+                    props={{ placeholder: 'relations' }}
+                    value={this.state.relations}
+                    onChange={this.handleRelationChange}
+                    renderTag={this.renderRelation} />
                 <input name="notes"
-                    value={this.state.notes} onChange={this.handleChange} placeholder="Notes"></input>
+                    value={this.state.notes} onChange={this.handleChange} placeholder="Notes" />
                 <p style={{ color: 'red' }}>{this.dced}</p>
             </form>
         );
+    }
+}
+
+class About extends React.Component {
+    render() {
+        return (
+            <div className='about'>
+                <p>Study Software</p>
+                <p>By Tao Lin</p>
+                <p>taoroalin@gmail.com</p>
+                <p>Built using React, Neo4j</p>
+                <p hidden>D3, and HerokuApp</p>
+            </div>
+        )
     }
 }
 
