@@ -62,14 +62,13 @@ class Header extends React.Component {
                     position: 'absolute',
                     left: 0,
                     top: 0,
-                    color: '#41b8cc',
                     display: 'flex',
                     flexDirection: 'horizontal'
                 }}>
                     <h1 onClick={this.aboutMode} style={{ margin: '4px 0 0px 20px' }}>Study Software</h1>
                 </div>
                 <div style={{ display: 'absolute', right: 0, top: 0 }}>
-                    <div style={{ display: 'flex', flexDirection: 'row-reverse', color: '#8bcbd6' }}>
+                    <div style={{ display: 'flex', flexDirection: 'row-reverse'}}>
                         <h3 onClick={this.testMode}>Test</h3>
                         <h3 onClick={this.editMode}>Edit</h3>
                         <h3 onClick={this.addMode}>Add</h3>
@@ -132,6 +131,7 @@ class QuickInput extends React.Component {
         this.handleChange = this.handleChange.bind(this);
         this.clearForm = this.clearForm.bind(this);
         this.handleRelationChange = this.handleRelationChange.bind(this);
+        this.handleKey = this.handleKey.bind(this);
     }
     clearForm() {
         this.setState({
@@ -143,14 +143,37 @@ class QuickInput extends React.Component {
     }
 
     handleChange(event) {
+        if (event.target.name=='title'){
+            this.api.suggestSubjects(event.target.value);
+
+        }else if (event.target.name=='definition'){
+            this.api.suggestRelations(event.target.value);
+        }
         this.setState({ [event.target.name]: event.target.value });
     }
 
     handleRelationChange(relations) {
         this.setState({ relations })
     }
+
+    handleKey(event){
+        if (event.key == "Enter") {
+            if (!!window.event.shiftKey && event.target.nextSibling) {
+                event.target.nextSibling.focus();
+                event.preventDefault();
+            } else {
+                this.clearForm();
+                document.getElementsByName('title')[0].focus();
+                console.log(this.state.title + this.state.definition + this.state.notes);
+                console.log(this.state.relations);
+                this.state.created = 0;
+                this.api.createNoteRelation(this.state);
+            }
+        }
+    }
     renderRelation(props) {
         let { tag, key, disabled, onRemove, classNameRemove, getTagDisplayValue, ...other } = props
+        
         return (
             <span style={{ display: 'block', width: '35%', fontSize: '18px', background: '#b8f5ff', padding: '0px 4px 0px 4px', margin: '4px 0px 4px 14px', borderRadius: '3px' }} key={key} {...other}>
                 {getTagDisplayValue(tag)}
@@ -170,22 +193,7 @@ class QuickInput extends React.Component {
                     top: '30%',
                     transform: 'translate(-50%, -50%)'
                 }}
-                onKeyPress={(event) => {
-                    if (event.key == "Enter") {
-                        if (!!window.event.shiftKey && event.target.nextSibling) {
-                            event.target.nextSibling.focus();
-                            event.preventDefault();
-                        } else {
-                            this.clearForm();
-                            document.getElementsByName('title')[0].focus();
-                            console.log(this.state.title + this.state.definition + this.state.notes);
-                            console.log(this.state.relations);
-                            this.state.created = 0;
-                            this.api.createNoteRelation(this.state);
-                        }
-                    }
-                }
-                }>
+                onKeyPress={this.handleKey}>
                 <input name="title"
                     value={this.state.title} onChange={this.handleChange} placeholder="Unique Title" />
                 <input name="definition"

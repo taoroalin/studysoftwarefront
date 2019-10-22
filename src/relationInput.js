@@ -40,11 +40,12 @@ class RelationInput extends React.Component {
 class Relation extends React.Component{
     constructor(props){
         super(props);
+        this.state={type:'', polarity:true, strength:0}
     }
     render(){
         return (
             <div>
-                
+                <span style={{background:}}
             </div>
         )
     }

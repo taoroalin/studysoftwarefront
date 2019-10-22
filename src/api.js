@@ -55,15 +55,41 @@ export default class Api{
     );
     queryPromise.then(result=>{
       console.log(result.records);
-    })
+    });
   }
 
-  suggestRelations(){
-
+  suggestRelations(text){
+    this.session=this.driver.session();
+    let queryPromise=this.session.run(
+      `MATCH ()-[r]->() 
+      WHERE type(r) =~ {r}
+      RETURN DISTINCT type(r)`,
+      {r:'(?i)'+text + '.*'}
+    );
+    queryPromise.then(result=>{
+      let stringList = [];
+      for (let i=0; i<result.records.length; i++){
+        stringList.push(result.records[i].get(0))
+      }
+      console.log("suggested relations", stringList);
+    });
   }
 
-  suggestSubjects(){
-    
+  suggestSubjects(text){
+    this.session=this.driver.session();
+    let queryPromise=this.session.run(
+      `MATCH (n:Movie) 
+      WHERE n.title =~ {r}
+      RETURN DISTINCT n.title`,
+      {r:'(?i)' + text + '.*'}
+    );
+    queryPromise.then(result=>{
+      let stringList = [];
+      for (let i=0; i<result.records.length; i++){
+        stringList.push(result.records[i].get(0))
+      }
+      console.log("suggested relations", stringList);
+    });
   }
 
   createNoteRelation(node){

@@ -1,3 +1,22 @@
+* {
+  --accent:#41b8cc;
+  --accent-light:#8bcbd6;
+  --back:white;
+  --region:#efefef;
+  --light:#b3b3b3;
+}
+.accent{
+  color:var(--accent);
+}
+.accent-light{
+  color:var(--accent-light);
+}
+.region{
+  color:var(--region);
+}
+.light{
+  color:var(--light);
+}
 body {
   margin: 0;
   font-family: "Helvetica Neue", Raleway, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
@@ -5,12 +24,11 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /*background:#202020;*/
 }
 
 input{
   border:none;
-  background-color:#efefef;
+  background-color:var(--region);
   display:block;
   margin: 14px;
   padding: 6px;
@@ -21,12 +39,14 @@ input{
 h1{
   font-weight: lighter;
   font-size:38px;
+  color:var(--accent);
 }
 
 h3{
   margin: 16px 7% 0px 0px;
   font-weight: lighter;
   font-size:24px;
+  color:var(--accent-light);
 }
 h3:hover{
 cursor: pointer;
@@ -35,13 +55,9 @@ h1:hover{
   cursor: pointer;
 }
 
-body::scrollbar{
-  display:none;
-}
-
-input::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
-  color:#b3b3b3;
-  opacity: 1; /* Firefox */
+input::placeholder {
+  color:var(--light);
+  opacity: 1;
 }
 
 code {
