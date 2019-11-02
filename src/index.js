@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import TagsInput from 'react-tagsinput'
+import TagsInput from 'react-tagsinput';
+import RelationInput from './relationInput';
 import scrollArea from 'react-scrollbar';
 import './index.css';
 import * as serviceWorker from './serviceWorker';
@@ -68,7 +69,7 @@ class Header extends React.Component {
                     <h1 onClick={this.aboutMode} style={{ margin: '4px 0 0px 20px' }}>Study Software</h1>
                 </div>
                 <div style={{ display: 'absolute', right: 0, top: 0 }}>
-                    <div style={{ display: 'flex', flexDirection: 'row-reverse'}}>
+                    <div style={{ display: 'flex', flexDirection: 'row-reverse' }}>
                         <h3 onClick={this.testMode}>Test</h3>
                         <h3 onClick={this.editMode}>Edit</h3>
                         <h3 onClick={this.addMode}>Add</h3>
@@ -131,7 +132,8 @@ class QuickInput extends React.Component {
         this.handleChange = this.handleChange.bind(this);
         this.clearForm = this.clearForm.bind(this);
         this.handleRelationChange = this.handleRelationChange.bind(this);
-        this.handleKey = this.handleKey.bind(this);
+        this.handleSubmit = this.handleSubmit.bind(this);
+        this.handleNext = this.handleNext.bind(this);
     }
     clearForm() {
         this.setState({
@@ -143,10 +145,10 @@ class QuickInput extends React.Component {
     }
 
     handleChange(event) {
-        if (event.target.name=='title'){
+        if (event.target.name == 'title') {
             this.api.suggestSubjects(event.target.value);
 
-        }else if (event.target.name=='definition'){
+        } else if (event.target.name == 'definition') {
             this.api.suggestRelations(event.target.value);
         }
         this.setState({ [event.target.name]: event.target.value });
@@ -156,32 +158,23 @@ class QuickInput extends React.Component {
         this.setState({ relations })
     }
 
-    handleKey(event){
-        if (event.key == "Enter") {
-            if (!!window.event.shiftKey && event.target.nextSibling) {
-                event.target.nextSibling.focus();
-                event.preventDefault();
-            } else {
-                this.clearForm();
-                document.getElementsByName('title')[0].focus();
-                console.log(this.state.title + this.state.definition + this.state.notes);
-                console.log(this.state.relations);
-                this.state.created = 0;
-                this.api.createNoteRelation(this.state);
-            }
+    handleSubmit(event) {
+        if (event.key == "Enter" && (!!window.event.shiftKey && event.target.nextSibling)) {
+            this.clearForm();
+            document.getElementsByName('title')[0].focus();
+            console.log(this.state.title + this.state.definition + this.state.notes);
+            console.log(this.state.relations);
+            this.setState({created:0});
+            this.api.createNoteRelation(this.state);
         }
     }
-    renderRelation(props) {
-        let { tag, key, disabled, onRemove, classNameRemove, getTagDisplayValue, ...other } = props
-        
-        return (
-            <span style={{ display: 'block', width: '35%', fontSize: '18px', background: '#b8f5ff', padding: '0px 4px 0px 4px', margin: '4px 0px 4px 14px', borderRadius: '3px' }} key={key} {...other}>
-                {getTagDisplayValue(tag)}
-                {!disabled &&
-                    <a className={classNameRemove} onClick={(e) => onRemove(key)} />
-                }
-            </span>
-        )
+
+    handleNext(event) {
+        if (event.key == "Enter" && !(!!window.event.shiftKey && event.target.nextSibling)) {
+
+            event.target.nextSibling.focus();
+            event.preventDefault();
+        }
     }
 
     render() {
@@ -193,19 +186,15 @@ class QuickInput extends React.Component {
                     top: '30%',
                     transform: 'translate(-50%, -50%)'
                 }}
-                onKeyPress={this.handleKey}>
+                onKeyPress={this.handleSubmit}>
                 <input name="title"
-                    value={this.state.title} onChange={this.handleChange} placeholder="Unique Title" />
+                    value={this.state.title} onChange={this.handleChange} onKeyPress={this.handleNext} placeholder="Unique Title" />
                 <input name="definition"
-                    value={this.state.definition} onChange={this.handleChange} placeholder="Definition" />
-                <TagsInput
-                    addKeys='[9]'
-                    props={{ placeholder: 'relations' }}
-                    value={this.state.relations}
-                    onChange={this.handleRelationChange}
-                    renderTag={this.renderRelation} />
+                    value={this.state.definition} onChange={this.handleChange} onKeyPress={this.handleNext} placeholder="Definition" />
+                <RelationInput
+                    placeholder='relations' />
                 <input name="notes"
-                    value={this.state.notes} onChange={this.handleChange} placeholder="Notes" />
+                    value={this.state.notes} onChange={this.handleChange} onKeyPress={this.handleNext} placeholder="Notes" />
                 <p style={{ color: 'red' }}>{this.dced}</p>
             </form>
         );

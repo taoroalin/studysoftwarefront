@@ -14,20 +14,27 @@ export default class Api{
   createDatabase(){
     this.session = this.driver.session();
     let createPromise=this.session.run(
-      `CREATE CONSTRAINT ON (p:Note) ASSERT p.title IS UNIQUE
+      `CREATE CONSTRAINT ON (p:Note) ASSERT p.title IS UNIQUE;
+       CREATE CONSTRAINT ON (p3:Theory) ASSERT p3.title IS UNIQUE;
+       CREATE CONSTRAINT ON (p4:Observation) ASSERT p4.title IS UNIQUE;
+       CREATE CONSTRAINT ON ()-[r:Cause]->() ASSERT exists(r.polarity);
+       CREATE CONSTRAINT ON ()-[r:Correlate]->() ASSERT exists(r.polarity);
+       CREATE CONSTRAINT ON ()-[r:Predict]->() ASSERT exists(r.polarity);
+       CREATE CONSTRAINT ON ()-[r:Support]->() ASSERT exists(r.polarity);`,
+      {});
+      /*
+             CREATE CONSTRAINT ON (p0:Term) ASSERT p0.title IS UNIQUE
        CREATE CONSTRAINT ON (p1:Subject) ASSERT p1.title IS UNIQUE
        CREATE CONSTRAINT ON (p2:Course) ASSERT p2.title IS UNIQUE
-       CREATE CONSTRAINT ON (p3:Theory) ASSERT p3.title IS UNIQUE
-       CREATE CONSTRAINT ON (p4:Observation) ASSERT p4.title IS UNIQUE
-      CREATE CONSTRAINT ON (a)-[r:Cause {polarity: '+'}]->(b) ASSERT r.polarity IS UNIQUE`,
-      {});
+       CREATE INDEX ON :Note(title)
+      */
     let relationDictionary={
       
-      causes:{polarity:true},
-      correlates:{polarity:true},
-      evidences:{polarity:true},
-      proves:{polarity:true},
-      predicts:{polarity:true},
+      Cause:{polarity:true, notes:''},
+      Correlate:{polarity:true},
+      Support:{polarity:true},
+      Prove:{polarity:true},
+      Predict:{polarity:true},
 
       studied:{},
       believed:{},
