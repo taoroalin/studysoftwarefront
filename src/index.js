@@ -134,6 +134,7 @@ class QuickInput extends React.Component {
         this.handleRelationChange = this.handleRelationChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
         this.handleNext = this.handleNext.bind(this);
+        this.confirmation = false;
     }
     clearForm() {
         this.setState({
@@ -155,20 +156,21 @@ class QuickInput extends React.Component {
     }
 
     handleRelationChange(relations) {
-        this.setState({ relations:relations })
+        this.setState({ relations: relations })
     }
 
     handleSubmit(event) {
-        if (event.key == "Enter" && (!!window.event.shiftKey && event.target.nextSibling)) {
+        if (event.key == "Enter" && !!window.event.shiftKey) {
             this.clearForm();
             document.getElementsByName('title')[0].focus();
-            this.setState({created:0});
-            this.api.createNoteRelation(this.state);
+            this.setState({ created: 0 });
+            this.api.createNoteRelation(this.state, (r)=>{if (r.result){this.confirmation=true; setTimeout(()=>this.confirmation=false, 2000)}});
+            event.preventDefault();
         }
     }
 
     handleNext(event) {
-        if (event.key == "Enter" && !(!!window.event.shiftKey && event.target.nextSibling)) {
+        if (event.key == "Enter" && !window.event.shiftKey && event.target.nextSibling) {
 
             event.target.nextSibling.focus();
             event.preventDefault();
@@ -190,12 +192,13 @@ class QuickInput extends React.Component {
                 <TextareaAutosize name="definition" maxLength='80'
                     value={this.state.definition} onChange={this.handleChange} onKeyPress={this.handleNext} placeholder="Definition" />
                 <RelationInput
-                    placeholder='relations'
+                    placeholder='Relations'
                     onRelationChange={this.handleRelationChange}
-                    api={this.api}/>
+                    api={this.api} />
                 <TextareaAutosize name="notes" maxLength='150'
                     value={this.state.notes} onChange={this.handleChange} onKeyPress={this.handleNext} placeholder="Notes" />
                 <p style={{ color: 'red' }}>{this.dced}</p>
+                {this.confirmation?<Confirmation />:null}
             </form>
         );
     }
@@ -210,6 +213,21 @@ class About extends React.Component {
                 <p>taoroalin@gmail.com</p>
                 <p>Built using React, Neo4j</p>
                 <p hidden>D3, and HerokuApp</p>
+            </div>
+        )
+    }
+}
+
+class Confirmation extends React.Component {
+    render() {
+        return (
+            <div style={{
+                position: 'absolute',
+                left: '50%',
+                top: '50%',
+                transform: 'translate(-50%, -50%)'
+            }} >
+                <p>Saved</p>
             </div>
         )
     }

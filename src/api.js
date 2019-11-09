@@ -65,7 +65,7 @@ export default class Api{
     });
   }
 
-  suggestRelations(text){
+  suggestRelations(text, callback){
     this.session=this.driver.session();
     let queryPromise=this.session.run(
       `MATCH ()-[r]->() 
@@ -78,11 +78,12 @@ export default class Api{
       for (let i=0; i<result.records.length; i++){
         stringList.push(result.records[i].get(0))
       }
+      callback(stringList);
       console.log("suggested relations", stringList);
     });
   }
 
-  suggestSubjects(text){
+  suggestSubjects(text, callback){
     this.session=this.driver.session();
     let queryPromise=this.session.run(
       `MATCH (n:Movie) 
@@ -95,11 +96,12 @@ export default class Api{
       for (let i=0; i<result.records.length; i++){
         stringList.push(result.records[i].get(0))
       }
+      callback(stringList);
       console.log("suggested relations", stringList);
     });
   }
 
-  createNoteRelation(node){
+  createNoteRelation(node, callback){
     this.session = this.driver.session();
     let newNode = 'MERGE (a:Note {definition:$definition, title:$title, notes:$notes, created:$created})';
     let relationList='';
@@ -109,7 +111,6 @@ export default class Api{
       subjectList+=`MERGE (s${i}:Note {title: '${node.relations[i].subject}'}) `
     }
     let create = `${newNode} ${subjectList} ${relationList} RETURN a`;
-    console.log(create);
     let createPromise=this.session.run(
       create,
       node);
@@ -117,7 +118,7 @@ export default class Api{
     this.session.close();
       const singleRecord = result.records[0];
       const node = singleRecord.get(0);
-      console.log(node.properties);
+      callback({result:true, node:node});
       this.session.close();
     });
   }

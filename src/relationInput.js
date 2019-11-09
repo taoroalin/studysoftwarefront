@@ -3,6 +3,9 @@ import './index.css'
 import Api from './api';
 import { wrap } from 'module';
 import TextareaAutosize from 'react-textarea-autosize';
+import ReactDOM from 'react-dom';
+import Autosuggest from 'react-autosuggest';
+
 
 
 class Relation extends React.Component {
@@ -44,10 +47,18 @@ export default class RelationInput extends React.Component {
         this.handleChange = this.handleChange.bind(this);
         this.handleNext = this.handleNext.bind(this);
         this.handleSwitch = this.handleSwitch.bind(this);
+        this.focus = this.focus.bind(this);
+        this.inputRef = React.createRef();
+        this.relationSuggestions = [];
+    }
+
+    focus() {
+        this.inputRef.current.focus();
     }
 
     handleChange(event) {
         this.setState({ 'scratch': event.target.value });
+        this.api.suggestRelations(this.state.scratch, (relations) => { this.relationSuggestions = relations });
     }
 
     add(list, item) {
@@ -64,20 +75,20 @@ export default class RelationInput extends React.Component {
         }
     }
 
-    handleSwitch(event) {
+    handleDown(event) {
         if (event.key == "Backspace" && this.state.scratch === '') {
             this.setState({ polarity: !this.state.polarity })
         }
     }
 
-    handleNext(event) {
+    handlePress(event) {
         if (event.key == "Enter" && !window.event.shiftKey) {
             if (this.state.scratch !== '') {
                 if (this.state.type === '') {
                     this.setState({ type: this.state.scratch, scratch: '' });
-                } else if (this.state.subject === ''){
+                } else if (this.state.subject === '') {
                     this.setState({ subject: this.state.scratch, scratch: '' });
-                }else{
+                } else {
                     let relation = { type: this.state.type, subject: this.state.subject, polarity: this.state.polarity };
                     this.setState({
                         relations: this.add(this.state.relations, relation)
@@ -85,15 +96,16 @@ export default class RelationInput extends React.Component {
                     this.setState({ scratch: '', type: this.state.scratch, subject: '', polarity: true });
                     this.props.onRelationChange(this.state.relations);
                 }
-            } else {
+            } else if (this.state.type !== '' && this.state.subject !== '') {
                 let relation = { type: this.state.type, subject: this.state.subject, polarity: this.state.polarity };
                 this.setState({
                     relations: this.add(this.state.relations, relation)
                 });
                 this.setState({ type: '', subject: '', polarity: true });
                 this.props.onRelationChange(this.state.relations);
+            } else {
+                ReactDOM.findDOMNode(this).nextSibling.focus();
             }
-
             event.preventDefault();
         }
     }
@@ -101,7 +113,7 @@ export default class RelationInput extends React.Component {
     render() {
         return (
             <div>
-                <div style={{ display: 'flex', flexDirection: 'column', marginLeft:'11px'}}>
+                <div style={{ display: 'flex', flexDirection: 'column', marginLeft: '11px' }}>
                     {this.state.relations.map((relation) =>
                         <Relation type={relation.type}
                             subject={relation.subject}
@@ -110,15 +122,20 @@ export default class RelationInput extends React.Component {
                 </div>
                 <div style={{ width: '100px' }}>
                     <div style={{ display: 'flex', flexDirection: 'row' }}>
-                        {this.state.type === '' ? null : <span style={{ borderRadius: '4', padding: '3px', margin:'17px 4px 17px 11px' }}>{this.state.type}</span>}
-                        {this.state.subject === '' ? null : <span style={{ borderRadius: '4', background: 'inherit', margin:'18px 0px 18px 0px'}}>{this.arrow()}</span>}
-                        {this.state.subject === '' ? null : <span style={{ borderRadius: '4', padding: '3px', margin:'17px 4px 17px 4px'  }}>{this.state.subject}</span>}
-                        <input value={this.state.scratch}
+                        {this.state.type === '' ? null : <span style={{ borderRadius: '4', padding: '3px', margin: '17px 4px 17px 11px' }}>{this.state.type}</span>}
+                        {this.state.subject === '' ? null : <span style={{ borderRadius: '4', background: 'inherit', margin: '18px 0px 18px 0px' }}>{this.arrow()}</span>}
+                        {this.state.subject === '' ? null : <span style={{ borderRadius: '4', padding: '3px', margin: '17px 4px 17px 4px' }}>{this.state.subject}</span>}
+                        <input ref={this.inputRef}
+                            value={this.state.scratch}
                             onChange={this.handleChange}
-                            onKeyPress={this.handleNext}
-                            onKeyDown={this.handleSwitch}
+                            onKeyPress={this.handlePress}
+                            onKeyDown={this.handleDown}
                             placeholder={this.props.placeholder}
-                            style={{marginTop:'4px', marginBottom:'0px'}} />
+                            style={{ marginTop: '4px', marginBottom: '0px' }} />
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', marginLeft: '11px' }}>
+                        {this.relationSuggestions.map((relation) =>
+                            <p>{relation}</p>)}
                     </div>
                 </div>
             </div>
