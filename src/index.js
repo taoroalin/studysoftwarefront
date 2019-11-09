@@ -7,6 +7,7 @@ import './index.css';
 import * as serviceWorker from './serviceWorker';
 import { read } from 'fs';
 import { tsImportEqualsDeclaration } from '@babel/types';
+import TextareaAutosize from 'react-textarea-autosize';
 import Api from './api';
 
 class Header extends React.Component {
@@ -125,7 +126,6 @@ class QuickInput extends React.Component {
             created: 0,
             reviewHistory: [],
             user: 'Tao',
-
         };
         this.api = new Api();
         this.dced = '';
@@ -155,15 +155,13 @@ class QuickInput extends React.Component {
     }
 
     handleRelationChange(relations) {
-        this.setState({ relations })
+        this.setState({ relations:relations })
     }
 
     handleSubmit(event) {
         if (event.key == "Enter" && (!!window.event.shiftKey && event.target.nextSibling)) {
             this.clearForm();
             document.getElementsByName('title')[0].focus();
-            console.log(this.state.title + this.state.definition + this.state.notes);
-            console.log(this.state.relations);
             this.setState({created:0});
             this.api.createNoteRelation(this.state);
         }
@@ -187,13 +185,15 @@ class QuickInput extends React.Component {
                     transform: 'translate(-50%, -50%)'
                 }}
                 onKeyPress={this.handleSubmit}>
-                <input name="title"
+                <TextareaAutosize name="title" maxLength='35'
                     value={this.state.title} onChange={this.handleChange} onKeyPress={this.handleNext} placeholder="Unique Title" />
-                <input name="definition"
+                <TextareaAutosize name="definition" maxLength='80'
                     value={this.state.definition} onChange={this.handleChange} onKeyPress={this.handleNext} placeholder="Definition" />
                 <RelationInput
-                    placeholder='relations' />
-                <input name="notes"
+                    placeholder='relations'
+                    onRelationChange={this.handleRelationChange}
+                    api={this.api}/>
+                <TextareaAutosize name="notes" maxLength='150'
                     value={this.state.notes} onChange={this.handleChange} onKeyPress={this.handleNext} placeholder="Notes" />
                 <p style={{ color: 'red' }}>{this.dced}</p>
             </form>

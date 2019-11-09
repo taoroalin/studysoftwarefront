@@ -27,14 +27,25 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-input{
+input, textarea{
   border:none;
   background-color:var(--region);
   display:block;
-  margin: 14px;
+  margin: 16px 0px 16px 0px;
   padding: 6px;
   font-size: 20px;
   border-radius: 6px;
+}
+
+textarea {
+  resize: none;
+  overflow:hidden;
+  width:100%;
+}
+
+div{
+  padding:0px;
+  margin:0px;
 }
 
 span{

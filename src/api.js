@@ -101,14 +101,14 @@ export default class Api{
 
   createNoteRelation(node){
     this.session = this.driver.session();
-
-    let relationList='MERGE (a:Note {definition:$definition, title:$title, notes:$notes, created:$created}) ';
+    let newNode = 'MERGE (a:Note {definition:$definition, title:$title, notes:$notes, created:$created})';
+    let relationList='';
     let subjectList='';
     for(let i=0; i<node.relations.length; i++){
       relationList+= `MERGE (a)-[r${i}:${node.relations[i].type}]->(s${i}) `;
       subjectList+=`MERGE (s${i}:Note {title: '${node.relations[i].subject}'}) `
     }
-    let create = `${subjectList} ${relationList} RETURN a`;
+    let create = `${newNode} ${subjectList} ${relationList} RETURN a`;
     console.log(create);
     let createPromise=this.session.run(
       create,
