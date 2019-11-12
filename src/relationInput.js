@@ -12,7 +12,7 @@ class Relation extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            type: this.props.type,
+            relation: this.props.relation,
             polarity: this.props.polarity || '',
             subject: this.props.subject,
             strength: 0
@@ -30,7 +30,7 @@ class Relation extends React.Component {
         return (
             <div>
                 <div style={{ display: 'flex', flexDirection: 'row' }}>
-                    <span style={{}}>{this.state.type}</span>
+                    <span style={{}}>{this.state.relation}</span>
                     <span style={{ backgroundColor: '#ffffff', padding: 0, margin: '2px' }}>{this.arrow()}</span>
                     <span style={{}}>{this.state.subject}</span>
                 </div>
@@ -42,23 +42,45 @@ class Relation extends React.Component {
 export default class RelationInput extends React.Component {
     constructor(props) {
         super(props);
-        this.state = { scratch: '', type: '', polarity: true, subject: '', relations: [] };
+        this.state = {
+            relation: '',
+            subject: '',
+            polarity: true,
+            relations: [],
+            suggestedRelations: [],
+            selectedRelation: '',
+            suggestedSubjects: [],
+            suggestedSubject: '',
+            relationFocus: false,
+            subjectFocus: false,
+        };
         this.api = props.api || new Api();
-        this.handleChange = this.handleChange.bind(this);
-        this.handleNext = this.handleNext.bind(this);
-        this.handleSwitch = this.handleSwitch.bind(this);
+        this.handleRelationChange = this.handleRelationChange.bind(this);
+        this.handleSubjectChange = this.handleSubjectChange.bind(this);
+        this.handleRelationPress = this.handleRelationPress.bind(this);
+        this.handleSubjectPress = this.handleSubjectPress.bind(this);
         this.focus = this.focus.bind(this);
-        this.inputRef = React.createRef();
-        this.relationSuggestions = [];
+        this.subjectFocus = this.subjectFocus.bind(this);
+        this.relationInputRef = React.createRef();
+        this.subjectInputRef = React.createRef();
     }
 
     focus() {
-        this.inputRef.current.focus();
+        this.relationRef.current.focus();
+        this.setState({relationFocus:true, subjectFocus:false});
+    }
+    subjectFocus() {
+        this.subjectRef.current.focus();
+        this.setState({relationFocus:false, subjectFocus:true});
     }
 
-    handleChange(event) {
-        this.setState({ 'scratch': event.target.value });
-        this.api.suggestRelations(this.state.scratch, (relations) => { this.relationSuggestions = relations });
+    handleRelationChange(event) {
+        this.setState({ relation: event.target.value });
+        this.api.suggestRelations({ relation: this.state.relation, max: 3 }, relations => this.setState({ suggestedRelations: relations }));
+    }
+    handleSubjectChange(event) {
+        this.setState({ subject: event.target.value });
+        this.api.suggestSubjects({ subject: this.state.subject, max: 3 }, subjects => this.setState({ suggestedSubjects: subjects }));
     }
 
     add(list, item) {
@@ -75,37 +97,29 @@ export default class RelationInput extends React.Component {
         }
     }
 
-    handleDown(event) {
-        if (event.key == "Backspace" && this.state.scratch === '') {
-            this.setState({ polarity: !this.state.polarity })
-        }
-    }
-
-    handlePress(event) {
-        if (event.key == "Enter" && !window.event.shiftKey) {
-            if (this.state.scratch !== '') {
-                if (this.state.type === '') {
-                    this.setState({ type: this.state.scratch, scratch: '' });
-                } else if (this.state.subject === '') {
-                    this.setState({ subject: this.state.scratch, scratch: '' });
-                } else {
-                    let relation = { type: this.state.type, subject: this.state.subject, polarity: this.state.polarity };
-                    this.setState({
-                        relations: this.add(this.state.relations, relation)
-                    });
-                    this.setState({ scratch: '', type: this.state.scratch, subject: '', polarity: true });
-                    this.props.onRelationChange(this.state.relations);
-                }
-            } else if (this.state.type !== '' && this.state.subject !== '') {
-                let relation = { type: this.state.type, subject: this.state.subject, polarity: this.state.polarity };
+    handleSubjectPress(event) {
+        if (this.state.relation === '') {
+            this.focus();
+        } else if (event.key == "Enter" && !window.event.shiftKey) {
+            if (this.state.subject !== '') {
+                let relation = { relation: this.state.relation, subject: this.state.subject, polarity: this.state.polarity };
                 this.setState({
                     relations: this.add(this.state.relations, relation)
                 });
-                this.setState({ type: '', subject: '', polarity: true });
+                this.setState({ relation: '', subject: '', polarity: true });
                 this.props.onRelationChange(this.state.relations);
+                this.focus();
             } else {
                 ReactDOM.findDOMNode(this).nextSibling.focus();
             }
+            event.preventDefault();
+
+        }
+    }
+
+    handleRelationPress(event) {
+        if (event.key == "Enter" && !window.event.shiftKey && this.state.relation !== '') {
+            this.subjectFocus();
             event.preventDefault();
         }
     }
@@ -115,27 +129,38 @@ export default class RelationInput extends React.Component {
             <div>
                 <div style={{ display: 'flex', flexDirection: 'column', marginLeft: '11px' }}>
                     {this.state.relations.map((relation) =>
-                        <Relation type={relation.type}
+                        <Relation relation={relation.relation}
                             subject={relation.subject}
                             polarity={relation.polarity}
-                            key={relation.type.toString() + relation.subject.toString()} />)}
+                            key={relation.relation.toString() + relation.subject.toString()} />)}
                 </div>
                 <div style={{ width: '100px' }}>
                     <div style={{ display: 'flex', flexDirection: 'row' }}>
-                        {this.state.type === '' ? null : <span style={{ borderRadius: '4', padding: '3px', margin: '17px 4px 17px 11px' }}>{this.state.type}</span>}
-                        {this.state.subject === '' ? null : <span style={{ borderRadius: '4', background: 'inherit', margin: '18px 0px 18px 0px' }}>{this.arrow()}</span>}
-                        {this.state.subject === '' ? null : <span style={{ borderRadius: '4', padding: '3px', margin: '17px 4px 17px 4px' }}>{this.state.subject}</span>}
-                        <input ref={this.inputRef}
-                            value={this.state.scratch}
-                            onChange={this.handleChange}
-                            onKeyPress={this.handlePress}
-                            onKeyDown={this.handleDown}
-                            placeholder={this.props.placeholder}
-                            style={{ marginTop: '4px', marginBottom: '0px' }} />
+                        <input size={this.state.relation.length>5?this.state.relation.length:5}
+                        className='relationInput'
+                            ref={this.relationInputRef}
+                            value={this.state.relation}
+                            onChange={this.handleRelationChange}
+                            onKeyPress={this.handleRelationPress}
+                            placeholder='Relation'
+                             />
+                        <span style={{ borderRadius: '4', background: 'inherit', margin: '18px 0px 18px 0px' }}>{this.arrow()}</span>
+                        <input size={this.state.subject.length>5?this.state.subject.length:5}
+                            className='subjectInput'
+                            ref={this.subjectInputRef}
+                            value={this.state.subject}
+                            onChange={this.handleSubjectChange}
+                            onKeyPress={this.handleSubjectPress}
+                            placeholder='Subject'
+                             />
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', marginLeft: '11px' }}>
-                        {this.relationSuggestions.map((relation) =>
+                        {this.state.suggestedRelations.map((relation) =>
                             <p>{relation}</p>)}
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', marginLeft: '11px' }}>
+                        {this.state.suggestedSubjects.map((subject) =>
+                            <p>{subject}</p>)}
                     </div>
                 </div>
             </div>

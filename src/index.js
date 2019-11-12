@@ -11,72 +11,35 @@ import TextareaAutosize from 'react-textarea-autosize';
 import Api from './api';
 
 class Header extends React.Component {
-
-    addMode() {
-        ReactDOM.render(
-            <div>
-                <Header />
-                <QuickInput />
-                <Footer />
-            </div>,
-            document.getElementById('root')
-        )
+    constructor(props) {
+        super(props);
+        this.state = { mode: 'add' };
+        this.states={add:<QuickInput />, test:<Test />, edit: <Overview />, about: <About />}
     }
-
-    testMode() {
-        ReactDOM.render(
-            <div>
-                <Header />
-                <Test />
-                <Footer />
-            </div>,
-            document.getElementById('root')
-        )
-    }
-
-    editMode() {
-        ReactDOM.render(
-            <div>
-                <Header />
-                <Overview />
-                <Footer />
-            </div>,
-            document.getElementById('root')
-        )
-    }
-
-    aboutMode() {
-        ReactDOM.render(
-            <div>
-                <Header />
-                <About />
-                <Footer />
-            </div>,
-            document.getElementById('root')
-        )
-    }
-
     render() {
         return (
-            <div className="header"
-            >
-                <div style={{
-                    position: 'absolute',
-                    left: 0,
-                    top: 0,
-                    display: 'flex',
-                    flexDirection: 'horizontal'
-                }}>
-                    <h1 onClick={this.aboutMode} style={{ margin: '4px 0 0px 20px' }}>Study Software</h1>
-                </div>
-                <div style={{ display: 'absolute', right: 0, top: 0 }}>
-                    <div style={{ display: 'flex', flexDirection: 'row-reverse' }}>
-                        <h3 onClick={this.testMode}>Test</h3>
-                        <h3 onClick={this.editMode}>Edit</h3>
-                        <h3 onClick={this.addMode}>Add</h3>
+            <div>
+                <div className="header">
+                    <div style={{
+                        position: 'absolute',
+                        left: 0,
+                        top: 0,
+                        display: 'flex',
+                        flexDirection: 'horizontal'
+                    }}>
+                        <h1 onClick={()=>this.setState({mode:'about'})} style={{ margin: '4px 0 0px 20px' }}>Study Software</h1>
                     </div>
+                    <div style={{ display: 'absolute', right: 0, top: 0 }}>
+                        <div style={{ display: 'flex', flexDirection: 'row-reverse' }}>
+                            <h3 onClick={()=>this.setState({mode:'test'})}>Test</h3>
+                            <h3 onClick={()=>this.setState({mode:'Edit'})}>Edit</h3>
+                            <h3 onClick={()=>this.setState({mode:'Add'})}>Add</h3>
+                        </div>
+                    </div>
+                    {this.states[this.state]}
+                    <Footer />
                 </div>
-
+                {}
             </div>
         )
     }
@@ -120,6 +83,8 @@ class QuickInput extends React.Component {
         super(props);
         this.state = {
             title: '',
+            titleSuggestions: [],
+            titleSuggested: -1,
             definition: '',
             notes: '',
             relations: [],
@@ -127,14 +92,13 @@ class QuickInput extends React.Component {
             reviewHistory: [],
             user: 'Tao',
         };
+        this.confirmation = false;
         this.api = new Api();
-        this.dced = '';
         this.handleChange = this.handleChange.bind(this);
         this.clearForm = this.clearForm.bind(this);
         this.handleRelationChange = this.handleRelationChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
         this.handleNext = this.handleNext.bind(this);
-        this.confirmation = false;
     }
     clearForm() {
         this.setState({
@@ -147,10 +111,7 @@ class QuickInput extends React.Component {
 
     handleChange(event) {
         if (event.target.name == 'title') {
-            this.api.suggestSubjects(event.target.value);
-
-        } else if (event.target.name == 'definition') {
-            this.api.suggestRelations(event.target.value);
+            this.api.suggestSubjects({ subject: event.target.value, max: 3 }, suggestions => this.setState({ titleSuggestions: suggestions }));
         }
         this.setState({ [event.target.name]: event.target.value });
     }
@@ -164,7 +125,7 @@ class QuickInput extends React.Component {
             this.clearForm();
             document.getElementsByName('title')[0].focus();
             this.setState({ created: 0 });
-            this.api.createNoteRelation(this.state, (r)=>{if (r.result){this.confirmation=true; setTimeout(()=>this.confirmation=false, 2000)}});
+            this.api.createNoteRelation(this.state, (r) => { if (r.result) { this.confirmation = true; setTimeout(() => this.confirmation = false, 2000) } });
             event.preventDefault();
         }
     }
@@ -187,7 +148,7 @@ class QuickInput extends React.Component {
                     transform: 'translate(-50%, -50%)'
                 }}
                 onKeyPress={this.handleSubmit}>
-                <TextareaAutosize name="title" maxLength='35'
+                <TextareaAutosize name="title" cols='35' maxLength='35'
                     value={this.state.title} onChange={this.handleChange} onKeyPress={this.handleNext} placeholder="Unique Title" />
                 <TextareaAutosize name="definition" maxLength='80'
                     value={this.state.definition} onChange={this.handleChange} onKeyPress={this.handleNext} placeholder="Definition" />
@@ -197,8 +158,7 @@ class QuickInput extends React.Component {
                     api={this.api} />
                 <TextareaAutosize name="notes" maxLength='150'
                     value={this.state.notes} onChange={this.handleChange} onKeyPress={this.handleNext} placeholder="Notes" />
-                <p style={{ color: 'red' }}>{this.dced}</p>
-                {this.confirmation?<Confirmation />:null}
+                {this.confirmation ? <Confirmation /> : null}
             </form>
         );
     }
@@ -207,7 +167,15 @@ class QuickInput extends React.Component {
 class About extends React.Component {
     render() {
         return (
-            <div className='about'>
+            <div className='about'
+                style={{
+                    color: 'grey',
+                    position: 'absolute',
+                    left: '50%',
+                    top: '40%',
+                    transform: 'translate(-50%, -50%)',
+                    textAlign: 'center',
+                }}>
                 <p>Study Software</p>
                 <p>By Tao Lin</p>
                 <p>taoroalin@gmail.com</p>

@@ -5,6 +5,7 @@
   --region:#efefef;
   --region-dark:#e3e3e3;
   --light:#b3b3b3;
+  --dark:;
 }
 .accent{
   color:var(--accent);
@@ -35,6 +36,10 @@ input, textarea{
   padding: 6px;
   font-size: 20px;
   border-radius: 6px;
+}
+
+.relationInput{
+
 }
 
 textarea {
