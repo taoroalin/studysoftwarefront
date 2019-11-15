@@ -5,7 +5,7 @@
   --region:#efefef;
   --region-dark:#e3e3e3;
   --light:#b3b3b3;
-  --dark:;
+  --dark:grey;
 }
 .accent{
   color:var(--accent);
@@ -13,8 +13,11 @@
 .accent-light{
   color:var(--accent-light);
 }
+.region-dark{
+  background:var(--region-dark);
+}
 .region{
-  color:var(--region);
+  background:var(--region);
 }
 .light{
   color:var(--light);
