@@ -107,7 +107,7 @@ export default class Api {
     let relationList = '';
     let subjectList = '';
     for (let i = 0; i < node.relations.length; i++) {
-      relationList += `MERGE (a)-[r${i}:${node.relations[i].type}]->(s${i}) `;
+      relationList += `MERGE (a)-[r${i}:${node.relations[i].relation}]->(s${i}) `;
       subjectList += `MERGE (s${i}:Note {title: '${node.relations[i].subject}'}) `
     }
     let create = `${newNode} ${subjectList} ${relationList} RETURN a`;

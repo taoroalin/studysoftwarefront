@@ -66,16 +66,10 @@ export default class RelationInput extends React.Component {
     }
 
     handleRelationChange(event) {
-        this.setState({ relation: event.target.value });
+        this.setState({ relation: event.target.value || '' });
     }
     handleSubjectChange(event) {
-        this.setState({ subject: event.target.value });
-    }
-
-    add(list, item) {
-        let z = list;
-        z.push(item);
-        return z;
+        this.setState({ subject: event.target.value || '' });
     }
 
     arrow() {
@@ -87,17 +81,12 @@ export default class RelationInput extends React.Component {
     }
 
     createRelation() {
-        if (this.state.relation === '') {
-            this.focus();
-        } else {
-            if (this.state.subject !== '') {
-                let relation = { relation: this.state.relation, subject: this.state.subject, polarity: this.state.polarity };
-                this.setState({ relation: '', subject: '', polarity: true });
-                this.props.onRelationChange(this.add(this.props.relations, relation));
-                this.focus();
-            } else {
-                ReactDOM.findDOMNode(this).nextSibling.focus();
-            }
+        this.focus();
+        setTimeout(()=>this.focus(), 100);
+        if (this.state.subject !== '' && this.state.relation!=='') {
+            let relation = { relation: this.state.relation, subject: this.state.subject, polarity: this.state.polarity };
+            this.setState({ relation: '', subject: '', polarity: true });
+            this.props.onRelationChange(this.props.relations.concat(relation));
         }
     }
 
@@ -127,6 +116,7 @@ export default class RelationInput extends React.Component {
                             ref={this.subjectInputRef}
                             onChange={this.handleSubjectChange}
                             done={this.createRelation}
+                            onKeyDown={(event)=>{if(event.key==='Tab'){this.focus();event.preventDefault()}}}
                             placeholder='Subject'
                         />
                     </div>

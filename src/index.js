@@ -15,7 +15,7 @@ class Header extends React.Component {
     constructor(props) {
         super(props);
         this.state = { mode: 'add' };
-        this.states={add:<QuickInput />, test:<Test />, edit: <Overview />, about: <About />}
+        this.states = { add: <QuickInput />, test: <Test />, edit: <Overview />, about: <About /> }
     }
     render() {
         return (
@@ -28,16 +28,16 @@ class Header extends React.Component {
                         display: 'flex',
                         flexDirection: 'horizontal'
                     }}>
-                        <h1 onClick={()=>this.setState({mode:'about'})} style={{ margin: '4px 0 0px 20px' }}>Study Software</h1>
+                        <h1 onClick={() => this.setState({ mode: 'about' })} style={{ margin: '4px 0 0px 20px' }}>Study Software</h1>
                     </div>
                     <div style={{ display: 'absolute', right: 0, top: 0 }}>
                         <div style={{ display: 'flex', flexDirection: 'row-reverse' }}>
-                            <h3 onClick={()=>this.setState({mode:'test'})}>Test</h3>
-                            <h3 onClick={()=>this.setState({mode:'Edit'})}>Edit</h3>
-                            <h3 onClick={()=>this.setState({mode:'Add'})}>Add</h3>
+                            <h3 onClick={() => this.setState({ mode: 'test' })}>Test</h3>
+                            <h3 onClick={() => this.setState({ mode: 'edit' })}>Edit</h3>
+                            <h3 onClick={() => this.setState({ mode: 'add' })}>Add</h3>
                         </div>
                     </div>
-                    {this.states[this.state]}
+                    {this.states[this.state.mode]}
                     <Footer />
                 </div>
                 {}
@@ -84,19 +84,16 @@ class QuickInput extends React.Component {
         super(props);
         this.state = {
             title: '',
-            titleSuggestions: [],
-            titleSuggested: -1,
             definition: '',
             notes: '',
             relations: [],
             created: 0,
-            reviewHistory: [],
             user: 'Tao',
         };
         this.confirmation = false;
         this.api = new Api();
-        this.refs = {definition:React.createRef(), notes:React.createRef(), relations:React.createRef(), title:React.createRef()};
-        this.titleRef=React.createRef();
+        this.refs = { definition: React.createRef(), notes: React.createRef(), relations: React.createRef(), title: React.createRef() };
+        this.titleRef = React.createRef();
         this.inputs = {};
         this.handleChange = this.handleChange.bind(this);
         this.handleTitleChange = this.handleTitleChange.bind(this);
@@ -116,7 +113,7 @@ class QuickInput extends React.Component {
 
     handleChange(event) {
         this.setState({ [event.target.name]: event.target.value });
-    }    
+    }
     handleTitleChange(event) {
         this.setState({ title: event.target.value });
     }
@@ -127,10 +124,10 @@ class QuickInput extends React.Component {
 
     handleSubmit(event) {
         if (event.key === "Enter" && !!window.event.shiftKey) {
-            this.clearForm();
+            this.api.createNoteRelation(this.state, (r) => { if (r.result) { this.confirmation = true; setTimeout(() => this.confirmation = false, 2000) } });
             this.titleRef.current.focus();
             this.setState({ created: 0 });
-            this.api.createNoteRelation(this.state, (r) => { if (r.result) { this.confirmation = true; setTimeout(() => this.confirmation = false, 2000) } });
+            this.clearForm();
             event.preventDefault();
         }
     }
@@ -153,9 +150,11 @@ class QuickInput extends React.Component {
                 }}
                 onKeyPress={this.handleSubmit}>
                 <Suggestion name='title' width={300} height={2}
-                    value={this.state.title} onChange={this.handleTitleChange} placeholder="Unique Title" ref={this.titleRef}/>
+                    value={this.state.title} onChange={this.handleTitleChange} placeholder="Unique Title" ref={this.titleRef} />
                 <TextareaAutosize name="definition" maxLength='80' ref={this.refs.definition}
                     value={this.state.definition} onChange={this.handleChange} onKeyPress={this.handleNext} placeholder="Definition" />
+                <TextareaAutosize name="notes" maxLength='150' ref={this.refs.notes}
+                    value={this.state.notes} onChange={this.handleChange} onKeyPress={this.handleNext} placeholder="Notes" />
                 <RelationInput
                     name='relations'
                     relations={this.state.relations}
@@ -163,8 +162,6 @@ class QuickInput extends React.Component {
                     placeholder='Relations'
                     onRelationChange={this.handleRelationChange}
                     api={this.api} />
-                <TextareaAutosize name="notes" maxLength='150' ref={this.refs.notes}
-                    value={this.state.notes} onChange={this.handleChange} onKeyPress={this.handleNext} placeholder="Notes" />
                 {this.confirmation ? <Confirmation /> : null}
             </form>
         );
@@ -209,11 +206,8 @@ class Confirmation extends React.Component {
 }
 
 ReactDOM.render(
-    <div>
         <Header />
-        <QuickInput />
-        <Footer />
-    </div>,
+    ,
     document.getElementById('root')
 );
 
