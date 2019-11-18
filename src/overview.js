@@ -9,21 +9,31 @@ import Suggestion from './suggestion';
 export default class Overview extends React.Component {
     constructor(props) {
         super(props);
+        this.state={nodes:[], links:[]}
         this.api = props.api || new Api();
+        this.renderGraph = this.renderGraph.bind(this);
     }
-    render() {
-        var svg = d3.select(".graphCanvas").append("svg")
-            .attr("width", "100%").attr("height", "100%")
-            .attr("pointer-events", "all");
-
-        this.api
-            .getGraph()
-            .then(graph => {
-                let simulation = d3.forceSimulation(graph.nodes)
+    componentDidMount() {
+        this.renderGraph();
+    }
+    componentWillUnmount() {
+        this.svg=null;
+        this.simulation=null;
+    }
+    renderGraph() {
+        this.svg = d3.select(".graphCanvas");
+        let width = +this.svg.attr("width"),
+            height = +this.svg.attr("height");
+        this.simulation={};
+        let graphPromise=this.api.getGraph();
+        let thisTransfer=this;
+        graphPromise.then(graph=>{
+                graph.nodes=graph.nodes.map(node=>Object.assign(node, {px:Math.random()*800, py:Math.random()*800}))
+                thisTransfer.setState({nodes:graph.nodes, links:graph.links});
+                thisTransfer.simulation = d3.forceSimulation(graph.nodes)
                     .force("charge", d3.forceManyBody())
-                    .force("link", d3.forceLink(graph.links))
-                    .force("center", d3.forceCenter());
-                var node = svg.append("g")
+                    .force("center", d3.forceCenter(width / 2, height / 2));
+                let node = thisTransfer.svg.append("g")
                     .attr("class", "nodes")
                     .selectAll("circle")
                     .data(graph.nodes)
@@ -49,24 +59,35 @@ export default class Overview extends React.Component {
                 }
 
                 var link_force = d3.forceLink(graph.links)
-                    .id(function (d) { return d.name; })
+                    .id(function (d) { return d.idx; })
 
                 //Add a links force to the simulation
                 //Specify links  in d3.forceLink argument   
 
 
-                simulation.force("links", link_force)
+                thisTransfer.simulation.force("links", link_force)
                 //add tick instructions: 
-                simulation.on("tick", tickActions);
-                var link = svg.append("g")
+                thisTransfer.simulation.on("tick", tickActions);
+                var link = thisTransfer.svg.append("g")
                     .attr("class", "links")
                     .selectAll("line")
                     .data(graph.links)
                     .enter().append("line")
                     .attr("stroke-width", 2);
             });
+            
+    }
+
+    render() {
         return (
-            <div className='graphCanvas'></div>
+            <div>
+            <div>
+                {this.state.nodes.map(node=><p>{node.title}</p>)}
+                {this.state.links.map(link=><p>{link.source} {link.target}</p>)}
+            </div>
+            <svg className='graphCanvas' width='800px' height='800px' style={{background:'#eeeeee'}}></svg>
+
+            </div>
         )
     }
 }

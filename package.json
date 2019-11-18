@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "d3": "^5.12.0",
+    "lodash": "^4.17.15",
     "measure-text": "0.0.4",
     "neo4j-driver": "^1.7.6",
     "react": "^16.10.2",

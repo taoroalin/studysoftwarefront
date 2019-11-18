@@ -4,17 +4,21 @@ import RelationInput from './relationInput';
 import scrollArea from 'react-scrollbar';
 import './index.css';
 import * as serviceWorker from './serviceWorker';
-import { read } from 'fs';
 import TextareaAutosize from 'react-textarea-autosize';
 import Api from './api';
 import Suggestion from './suggestion';
-import Overview from './overview';
+import Overview from './overview'
 
 class Header extends React.Component {
     constructor(props) {
         super(props);
         this.state = { mode: 'edit' };
-        this.states = { add: <QuickInput />, test: <Test />, edit: <Overview />, about: <About /> }
+        this.states = { 
+            add: <QuickInput api={this.api}/>, 
+            test: <Test api={this.api} />, 
+            edit: <Overview api={this.api} />, 
+            about: <About /> }
+        this.Api = new Api();
     }
     render() {
         return (
@@ -59,6 +63,10 @@ class Footer extends React.Component {
 }
 
 class Test extends React.Component {
+    constructor(props){
+        super(props);
+        this.api=props.api || new Api();
+    }
     render() {
         return (
             <div className="overview"></div>
@@ -78,7 +86,7 @@ class QuickInput extends React.Component {
             user: 'Tao',
         };
         this.confirmation = false;
-        this.api = new Api();
+        this.api = props.api || new Api();
         this.refs = { definition: React.createRef(), notes: React.createRef(), relations: React.createRef(), title: React.createRef() };
         this.titleRef = React.createRef();
         this.inputs = {};

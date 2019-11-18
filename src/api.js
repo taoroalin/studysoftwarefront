@@ -1,5 +1,6 @@
 const neo4j = require('neo4j-driver').v1;
 const env = require('./env.js');
+const _ = require('lodash');
 
 export default class Api {
   constructor() {
@@ -132,28 +133,37 @@ export default class Api {
   getGraph(limit) {
     this.session = this.driver.session();
     return this.session.run(`MATCH (a:Note)-[r]->(b:Note)
-                             RETURN a.title AS note, collect(b.name) AS connecteds
-                             LIMIT {limit}`, { limit: limit || 100 })
+                             RETURN b.title AS note, 
+                             collect(a.title) AS subject, 
+                             collect(type(r)) as relation
+                             LIMIT $limit`, { limit: limit || 100 })
       .then(results => {
         this.session.close();
-        let nodes = [], rels = [], i = 0;
+        let nodes = [], links = [], i = 0;
         results.records.forEach(res => {
-          nodes.push({ title: res.get('note'), label: 'note' });
-          let target = i;
-          i++;
-          res.get('connecteds').forEach(name => {
-            let subject = { title: name, label: 'note' };
-            let source = nodes.indexOf(nodes, subject);
-            if (source === -1) {
+          let cur = { title: res.get('note'), label: 'note', idx:i };
+          let ix = _.findIndex(nodes, cur);
+          let source;
+          if (ix === -1) {
+            nodes.push(cur);
+            source = i;
+            i++;
+          }else{
+            source=ix;
+          }
+          res.get('subject').forEach(name => {
+            let subject = { title: name, label: 'note', idx:i };
+            let target = _.findIndex(nodes, subject);
+            if (target === -1) {
               nodes.push(subject);
-              source = i;
+              target = i;
               i++;
             }
-            rels.push({ source, target })
+            links.push({ source, target })
           })
         });
 
-        return { nodes, links: rels };
+        return { nodes, links };
       });
   }
 }
