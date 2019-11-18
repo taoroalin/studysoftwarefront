@@ -68,7 +68,7 @@ export default class Api {
   suggestRelations(req, callback) {
     this.session = this.driver.session();
     let queryPromise = this.session.run(
-      `MATCH ()-[r]->() 
+      `MATCH (:Note)-[r]->(:Note) 
       WHERE type(r) =~ {r}
       RETURN DISTINCT type(r) LIMIT {l}`,
       { r: '(?i)' + req.relation + '.*', l: req.max }
@@ -86,7 +86,7 @@ export default class Api {
   suggestSubjects(req, callback) {
     this.session = this.driver.session();
     let queryPromise = this.session.run(
-      `MATCH (n:Movie) 
+      `MATCH (n:Note) 
       WHERE n.title =~ {r}
       RETURN DISTINCT n.title LIMIT {l}`,
       { r: '(?i)' + req.subject + '.*', l: req.max }
@@ -103,12 +103,18 @@ export default class Api {
 
   createNoteRelation(node, callback) {
     this.session = this.driver.session();
-    let newNode = 'MERGE (a:Note {definition:$definition, title:$title, notes:$notes, created:$created})';
+    let newNode = 'MERGE (a:Note {title:$title}) ';
+    if (node.definition){
+      newNode+= ' SET a.definition=$definition ';
+    }
+    if(node.notes){
+      newNode+=' SET a.notes=$notes ';
+    }
     let relationList = '';
     let subjectList = '';
     for (let i = 0; i < node.relations.length; i++) {
+      subjectList += `MERGE (s${i}:Note {title: '${node.relations[i].subject}'}) `;
       relationList += `MERGE (a)-[r${i}:${node.relations[i].relation}]->(s${i}) `;
-      subjectList += `MERGE (s${i}:Note {title: '${node.relations[i].subject}'}) `
     }
     let create = `${newNode} ${subjectList} ${relationList} RETURN a`;
     let createPromise = this.session.run(
@@ -121,5 +127,33 @@ export default class Api {
       callback({ result: true, node: node });
       this.session.close();
     });
+  }
+
+  getGraph(limit) {
+    this.session = this.driver.session();
+    return this.session.run(`MATCH (a:Note)-[r]->(b:Note)
+                             RETURN a.title AS note, collect(b.name) AS connecteds
+                             LIMIT {limit}`, { limit: limit || 100 })
+      .then(results => {
+        this.session.close();
+        let nodes = [], rels = [], i = 0;
+        results.records.forEach(res => {
+          nodes.push({ title: res.get('note'), label: 'note' });
+          let target = i;
+          i++;
+          res.get('connecteds').forEach(name => {
+            let subject = { title: name, label: 'note' };
+            let source = nodes.indexOf(nodes, subject);
+            if (source === -1) {
+              nodes.push(subject);
+              source = i;
+              i++;
+            }
+            rels.push({ source, target })
+          })
+        });
+
+        return { nodes, links: rels };
+      });
   }
 }

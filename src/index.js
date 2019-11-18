@@ -1,20 +1,19 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import TagsInput from 'react-tagsinput';
 import RelationInput from './relationInput';
 import scrollArea from 'react-scrollbar';
 import './index.css';
 import * as serviceWorker from './serviceWorker';
 import { read } from 'fs';
-import { tsImportEqualsDeclaration } from '@babel/types';
 import TextareaAutosize from 'react-textarea-autosize';
 import Api from './api';
 import Suggestion from './suggestion';
+import Overview from './overview';
 
 class Header extends React.Component {
     constructor(props) {
         super(props);
-        this.state = { mode: 'add' };
+        this.state = { mode: 'edit' };
         this.states = { add: <QuickInput />, test: <Test />, edit: <Overview />, about: <About /> }
     }
     render() {
@@ -56,18 +55,6 @@ class Footer extends React.Component {
             textAlign: 'center',
             color: 'grey'
         }}>Prototype v1</p>)
-    }
-}
-
-class Overview extends React.Component {
-    render() {
-        return (
-            <div className="overview">
-                <div className="overviewHeader">
-
-                </div>
-            </div>
-        )
     }
 }
 
