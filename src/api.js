@@ -141,7 +141,7 @@ export default class Api {
         this.session.close();
         let nodes = [], links = [], i = 0;
         results.records.forEach(res => {
-          let cur = { title: res.get('note'), label: 'note', idx:i };
+          let cur = { title: res.get('note'), label: 'note', id:i };
           let ix = _.findIndex(nodes, cur);
           let source;
           if (ix === -1) {
@@ -152,7 +152,7 @@ export default class Api {
             source=ix;
           }
           res.get('subject').forEach(name => {
-            let subject = { title: name, label: 'note', idx:i };
+            let subject = { title: name, label: 'note', id:i };
             let target = _.findIndex(nodes, subject);
             if (target === -1) {
               nodes.push(subject);
