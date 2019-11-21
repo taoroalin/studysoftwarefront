@@ -1,3 +1,5 @@
+import console from 'console';
+
 const neo4j = require('neo4j-driver').v1;
 const env = require('./env.js');
 const _ = require('lodash');

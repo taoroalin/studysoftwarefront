@@ -8,6 +8,7 @@ import TextareaAutosize from 'react-textarea-autosize';
 import Api from './api';
 import Suggestion from './suggestion';
 import Overview from './overview'
+import console from 'console'
 
 class Header extends React.Component {
     constructor(props) {
@@ -19,6 +20,8 @@ class Header extends React.Component {
             edit: <Overview api={this.api} />, 
             about: <About /> }
         this.Api = new Api();
+        console.log('hi this is Header');
+
     }
     render() {
         return (
@@ -51,6 +54,7 @@ class Header extends React.Component {
 
 class Footer extends React.Component {
     render() {
+        console.log('hi');
         return (<p style={{
             position: 'absolute',
             bottom: 0,

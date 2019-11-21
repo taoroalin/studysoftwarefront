@@ -72,6 +72,17 @@ export default class Overview extends React.Component {
                 .attr("r", 5)
                 .attr("fill", function (d) { return '#dd5566' })
 
+            var labelNode = container.append("g").attr("class", "nodes")
+                .selectAll("text")
+                .data(graph.nodes)
+                .enter()
+                .append("text")
+                .text((d, i) => d.title )
+                .style("fill", "#555")
+                .style("font-family", "Arial")
+                .style("font-size", 12)
+                .style("pointer-events", "none");
+
             node.on("mouseover", focus).on("mouseout", unfocus);
 
             node.call(
